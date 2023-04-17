@@ -284,7 +284,9 @@ class AssetRepository extends Repository
 
         $variantClassNames = $this->reflectionService->getAllImplementationClassNamesForInterface(AssetVariantInterface::class);
         foreach ($variantClassNames as $variantClassName) {
-            $queryBuilder->andWhere('e NOT INSTANCE OF ' . $variantClassName);
+            if (is_a($variantClassName, AssetInterface::class)) {
+                $queryBuilder->andWhere('e NOT INSTANCE OF ' . $variantClassName);
+            }
         }
     }
 
