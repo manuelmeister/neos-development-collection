@@ -65,7 +65,7 @@ final class Node
          *
          * To read the serialized properties, call properties->serialized().
          *
-         * @return PropertyCollectionInterface Property values, indexed by their name
+         * @var PropertyCollectionInterface Property values, indexed by their name
          */
         public readonly PropertyCollectionInterface $properties,
         public readonly ?NodeName $nodeName,
@@ -74,10 +74,7 @@ final class Node
     }
 
     /**
-     * Returns the specified property.
-     *
-     * If the node has a content object attached, the property will be fetched
-     * there if it is gettable.
+     * Returns the specified property, or null if it does not exist (or was set to null -> unset)
      *
      * @param string $propertyName Name of the property
      * @return mixed value of the property
@@ -85,7 +82,7 @@ final class Node
      */
     public function getProperty(string $propertyName): mixed
     {
-        return $this->properties[$propertyName];
+        return $this->properties->offsetGet($propertyName);
     }
 
     /**

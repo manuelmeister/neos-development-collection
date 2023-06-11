@@ -55,9 +55,11 @@ final class PropertyCollection implements PropertyCollectionInterface
     {
         if (!isset($this->deserializedPropertyValuesRuntimeCache[$offset])) {
             $serializedProperty = $this->serializedPropertyValues->getProperty($offset);
-            $this->deserializedPropertyValuesRuntimeCache[$offset] = $serializedProperty === null
-                ? null
-                : $this->propertyConverter->deserializePropertyValue($serializedProperty);
+            if ($serializedProperty === null) {
+                return null;
+            }
+            $this->deserializedPropertyValuesRuntimeCache[$offset] =
+                $this->propertyConverter->deserializePropertyValue($serializedProperty);
         }
 
         return $this->deserializedPropertyValuesRuntimeCache[$offset];
