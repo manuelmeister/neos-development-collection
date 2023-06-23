@@ -227,6 +227,42 @@ trait ConstraintChecks
         array $parentNodeAggregateIds,
         ContentRepository $contentRepository
     ): void {
+        /** @var array<string, bool> $autoCreatedParentNodeAggregates */
+        $autoCreatedParentNodeAggregates = [];
+
+        foreach ($parentNodeAggregateIds as $parentNodeAggregateId) {
+            foreach (
+                $contentRepository->getContentGraph()->findParentNodeAggregates(
+                    $contentStreamId,
+                    $parentNodeAggregateId
+                ) as $grandParentNodeAggregate
+            ) {
+                $parentAggregate = $this->requireProjectedNodeAggregate(
+                    $contentStreamId,
+                    $parentNodeAggregateId,
+                    $contentRepository
+                );
+                try {
+                    $grandParentsNodeType = $this->requireNodeType($grandParentNodeAggregate->nodeTypeName);
+                    // TODO or $parentAggregate->classification->isTethered();
+                    $autoCreatedParentNodeAggregates[$parentNodeAggregateId->value] = $grandParentsNodeType->hasAutoCreatedChildNode($parentAggregate->nodeName);
+                    $this->requireNodeTypeConstraintsImposedByGrandparentToBeMet(
+                        $grandParentsNodeType,
+                        $parentAggregate->nodeName,
+                        $nodeType
+                    );
+                } catch (NodeTypeNotFound $e) {
+                    // skip constraint check; Once the grand parent is changed to be of an available type,
+                    // the constraint checks are executed again. See handleChangeNodeAggregateType
+                }
+            }
+        }
+
+        if (!in_array(false, $autoCreatedParentNodeAggregates, true)) {
+            // all parent node aggregates are auto-created, so we dont run the direct constraint checks again
+            return;
+        }
+
         foreach ($parentNodeAggregateIds as $parentNodeAggregateId) {
             $parentAggregate = $this->requireProjectedNodeAggregate(
                 $contentStreamId,
@@ -239,26 +275,6 @@ trait ConstraintChecks
             } catch (NodeTypeNotFound $e) {
                 // skip constraint check; Once the parent is changed to be of an available type,
                 // the constraint checks are executed again. See handleChangeNodeAggregateType
-            }
-
-            foreach (
-                $contentRepository->getContentGraph()->findParentNodeAggregates(
-                    $contentStreamId,
-                    $parentNodeAggregateId
-                ) as $grandParentNodeAggregate
-            ) {
-                /* @var $grandParentNodeAggregate NodeAggregate */
-                try {
-                    $grandParentsNodeType = $this->requireNodeType($grandParentNodeAggregate->nodeTypeName);
-                    $this->requireNodeTypeConstraintsImposedByGrandparentToBeMet(
-                        $grandParentsNodeType,
-                        $parentAggregate->nodeName,
-                        $nodeType
-                    );
-                } catch (NodeTypeNotFound $e) {
-                    // skip constraint check; Once the grand parent is changed to be of an available type,
-                    // the constraint checks are executed again. See handleChangeNodeAggregateType
-                }
             }
         }
     }
