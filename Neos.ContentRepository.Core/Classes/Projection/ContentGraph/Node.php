@@ -68,9 +68,16 @@ final class Node
          * @return PropertyCollectionInterface Property values, indexed by their name
          */
         public readonly PropertyCollectionInterface $properties,
+        /**
+         * The node's name. The name is guaranteed to be for tethered nodes.
+         * For the regular classification, it can be set optionally.
+         */
         public readonly ?NodeName $nodeName,
         public readonly Timestamps $timestamps,
     ) {
+        if ($this->classification->isTethered() && $this->nodeName === null) {
+            throw new \InvalidArgumentException('The NodeName must be set if the Node is tethered.', 1695118377232);
+        }
     }
 
     /**
