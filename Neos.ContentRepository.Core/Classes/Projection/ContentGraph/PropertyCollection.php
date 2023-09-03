@@ -19,9 +19,11 @@ use Neos\ContentRepository\Core\Infrastructure\Property\PropertyConverter;
 
 /**
  * The property collection implementation
- * @internal
+ *
+ * @extends \IteratorAggregate<string,mixed>
+ * @api
  */
-final class PropertyCollection implements PropertyCollectionInterface
+final class PropertyCollection implements \IteratorAggregate
 {
     /**
      * Properties from Nodes
@@ -46,33 +48,23 @@ final class PropertyCollection implements PropertyCollectionInterface
         $this->propertyConverter = $propertyConverter;
     }
 
-    public function offsetExists($offset): bool
+    public function has(string $propertyName): bool
     {
-        return $this->serializedPropertyValues->propertyExists($offset);
+        return $this->serializedPropertyValues->propertyExists($propertyName);
     }
 
-    public function offsetGet($offset): mixed
+    public function get(string $propertyName): mixed
     {
-        if (!isset($this->deserializedPropertyValuesRuntimeCache[$offset])) {
-            $serializedProperty = $this->serializedPropertyValues->getProperty($offset);
+        if (!isset($this->deserializedPropertyValuesRuntimeCache[$propertyName])) {
+            $serializedProperty = $this->serializedPropertyValues->getProperty($propertyName);
             if ($serializedProperty === null) {
                 return null;
             }
-            $this->deserializedPropertyValuesRuntimeCache[$offset] =
+            $this->deserializedPropertyValuesRuntimeCache[$propertyName] =
                 $this->propertyConverter->deserializePropertyValue($serializedProperty);
         }
 
-        return $this->deserializedPropertyValuesRuntimeCache[$offset];
-    }
-
-    public function offsetSet($offset, $value): never
-    {
-        throw new \RuntimeException("Do not use!");
-    }
-
-    public function offsetUnset($offset): never
-    {
-        throw new \RuntimeException("Do not use!");
+        return $this->deserializedPropertyValuesRuntimeCache[$propertyName];
     }
 
     /**
@@ -81,7 +73,7 @@ final class PropertyCollection implements PropertyCollectionInterface
     public function getIterator(): \Generator
     {
         foreach ($this->serializedPropertyValues as $propertyName => $_) {
-            yield $propertyName => $this->offsetGet($propertyName);
+            yield $propertyName => $this->get($propertyName);
         }
     }
 

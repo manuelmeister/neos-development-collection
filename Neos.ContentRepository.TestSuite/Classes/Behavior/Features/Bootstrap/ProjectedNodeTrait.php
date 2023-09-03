@@ -264,9 +264,9 @@ trait ProjectedNodeTrait
         $this->assertOnCurrentNode(function (Node $currentNode) use ($expectedProperties) {
             $properties = $currentNode->properties;
             foreach ($expectedProperties->getHash() as $row) {
-                Assert::assertTrue($properties->offsetExists($row['Key']), 'Property "' . $row['Key'] . '" not found');
+                Assert::assertTrue($properties->has($row['Key']), 'Property "' . $row['Key'] . '" not found');
                 $expectedPropertyValue = $this->resolvePropertyValue($row['Value']);
-                $actualPropertyValue = $properties->offsetGet($row['Key']);
+                $actualPropertyValue = $properties->get($row['Key']);
                 if ($row['Value'] === 'Date:now') {
                     // we accept 10s offset for the projector to be fine
                     Assert::assertLessThan($actualPropertyValue, $expectedPropertyValue->sub(new \DateInterval('PT10S')), 'Node property ' . $row['Key'] . ' does not match. Expected: ' . json_encode($expectedPropertyValue) . '; Actual: ' . json_encode($actualPropertyValue));
@@ -398,11 +398,11 @@ trait ProjectedNodeTrait
                 } else {
                     foreach ($rawExpectedProperties as $propertyName => $rawExpectedPropertyValue) {
                         Assert::assertTrue(
-                            $actualProperties->offsetExists($propertyName),
+                            $actualProperties->has($propertyName),
                             'Reference property "' . $propertyName . '" not found.'
                         );
                         $expectedPropertyValue = $this->resolvePropertyValue($rawExpectedPropertyValue);
-                        $actualPropertyValue = $actualProperties->offsetGet($propertyName);
+                        $actualPropertyValue = $actualProperties->get($propertyName);
                         if ($rawExpectedPropertyValue === 'Date:now') {
                             // we accept 10s offset for the projector to be fine
                             Assert::assertLessThan(

@@ -12,20 +12,35 @@ namespace Neos\Neos\Tests\Functional\Fusion;
  */
 
 use Neos\ContentRepository\Core\DimensionSpace\DimensionSpacePoint;
-use Neos\ContentRepository\Core\Factory\ContentRepositoryId;
-use Neos\ContentRepository\Core\Projection\ContentGraph\ContentSubgraphIdentity;
-use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
-use Neos\ContentRepository\Core\Projection\ContentGraph\PropertyCollectionInterface;
-use Neos\ContentRepository\Core\Projection\ContentGraph\Timestamps;
-use Neos\ContentRepository\Core\SharedModel\Node\NodeAggregateClassification;
-use Neos\ContentRepository\Core\SharedModel\Node\NodeAggregateId;
 use Neos\ContentRepository\Core\DimensionSpace\OriginDimensionSpacePoint;
+use Neos\ContentRepository\Core\Factory\ContentRepositoryId;
+use Neos\ContentRepository\Core\Feature\NodeModification\Dto\SerializedPropertyValue;
+use Neos\ContentRepository\Core\Feature\NodeModification\Dto\SerializedPropertyValues;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ArrayNormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\CollectionTypeDenormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ScalarNormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\UriNormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ValueObjectArrayDenormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ValueObjectBoolDenormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ValueObjectFloatDenormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ValueObjectIntDenormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ValueObjectStringDenormalizer;
+use Neos\ContentRepository\Core\Infrastructure\Property\PropertyConverter;
 use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\ContentRepository\Core\NodeType\NodeTypeName;
+use Neos\ContentRepository\Core\Projection\ContentGraph\ContentSubgraphIdentity;
+use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
+use Neos\ContentRepository\Core\Projection\ContentGraph\PropertyCollection;
+use Neos\ContentRepository\Core\Projection\ContentGraph\Timestamps;
 use Neos\ContentRepository\Core\Projection\ContentGraph\VisibilityConstraints;
+use Neos\ContentRepository\Core\SharedModel\Node\NodeAggregateClassification;
+use Neos\ContentRepository\Core\SharedModel\Node\NodeAggregateId;
 use Neos\ContentRepository\Core\SharedModel\Workspace\ContentStreamId;
 use Neos\Fusion\Tests\Functional\FusionObjects\AbstractFusionObjectTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * Testcase for the Fusion NodeLabel helper
@@ -129,25 +144,27 @@ class NodeHelperTest extends AbstractFusionObjectTest
             ->method('getLabel')
             ->willReturn('Content.Text');
 
-        $textNodeProperties = $this
-            ->getMockBuilder(PropertyCollectionInterface::class)
-            ->getMock();
-        $textNodeProperties
-            ->method('offsetExists')
-            ->willReturnCallback(function ($arg) {
-                return $arg === 'title' || $arg === 'text';
-            });
-        $textNodeProperties
-            ->method('offsetGet')
-            ->willReturnCallback(function ($arg) {
-                if ($arg === 'title') {
-                    return 'Some title';
-                }
-                if ($arg === 'text') {
-                    return 'Some text';
-                }
-                return null;
-            });
+        $textNodeProperties = new PropertyCollection(
+            SerializedPropertyValues::fromArray([
+                'title' => new SerializedPropertyValue('Some title', 'string'),
+                'text' => new SerializedPropertyValue('Some text', 'string'),
+            ]),
+            new PropertyConverter(
+                new Serializer([
+                    new DateTimeNormalizer(),
+                    new ScalarNormalizer(),
+                    new BackedEnumNormalizer(),
+                    new ArrayNormalizer(),
+                    new UriNormalizer(),
+                    new ValueObjectArrayDenormalizer(),
+                    new ValueObjectBoolDenormalizer(),
+                    new ValueObjectFloatDenormalizer(),
+                    new ValueObjectIntDenormalizer(),
+                    new ValueObjectStringDenormalizer(),
+                    new CollectionTypeDenormalizer()
+                ])
+            )
+        );
 
         $now = new \DateTimeImmutable();
 

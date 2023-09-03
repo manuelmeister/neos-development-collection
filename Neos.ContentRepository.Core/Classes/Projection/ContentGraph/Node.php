@@ -67,9 +67,9 @@ final class Node
          * References are NOT part of this API, but can be read through
          * the subgraph {@see ContentSubgraphInterface::findReferences()}.
          *
-         * You can also read the serialized properties {@see PropertyCollectionInterface::serialized()}.
+         * You can also read the serialized properties {@see PropertyCollection::serialized()}.
          */
-        public readonly PropertyCollectionInterface $properties,
+        public readonly PropertyCollection $properties,
         public readonly ?NodeName $nodeName,
         public readonly Timestamps $timestamps,
     ) {
@@ -84,7 +84,7 @@ final class Node
      */
     public function getProperty(string $propertyName): mixed
     {
-        return $this->properties->offsetGet($propertyName);
+        return $this->properties->get($propertyName);
     }
 
     /**
@@ -97,7 +97,7 @@ final class Node
      */
     public function hasProperty(string $propertyName): bool
     {
-        return $this->properties->offsetExists($propertyName);
+        return $this->properties->has($propertyName);
     }
 
     /**
