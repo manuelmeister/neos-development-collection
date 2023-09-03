@@ -17,7 +17,7 @@ namespace Neos\ContentRepository\TestSuite\Unit;
 use Neos\ContentRepository\Core\DimensionSpace\DimensionSpacePoint;
 use Neos\ContentRepository\Core\DimensionSpace\OriginDimensionSpacePoint;
 use Neos\ContentRepository\Core\Factory\ContentRepositoryId;
-use Neos\ContentRepository\Core\Feature\NodeModification\Dto\SerializedPropertyValue;
+use Neos\ContentRepository\Core\Feature\NodeModification\Dto\PropertyValuesToWrite;
 use Neos\ContentRepository\Core\Feature\NodeModification\Dto\SerializedPropertyValues;
 use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\ArrayNormalizer;
 use Neos\ContentRepository\Core\Infrastructure\Property\Normalizer\CollectionTypeDenormalizer;
@@ -51,7 +51,7 @@ use Symfony\Component\Serializer\Serializer;
  */
 final class NodeSubjectProvider
 {
-    public PropertyConverter $propertyConverter;
+    private PropertyConverter $propertyConverter;
 
     public function __construct()
     {
@@ -72,24 +72,25 @@ final class NodeSubjectProvider
         );
     }
 
-    public function usePropertyConverter(PropertyConverter $propertyConverter): void
+    public function setPropertyConverter(PropertyConverter $propertyConverter): void
     {
         $this->propertyConverter = $propertyConverter;
     }
 
     public function createMinimalNodeOfType(
         NodeType $nodeType,
-        SerializedPropertyValues $propertyValues = null,
-        ?NodeName $nodeName = null
+        SerializedPropertyValues|PropertyValuesToWrite|null $propertyValues = null,
+        ?NodeName $nodeName = null,
+        ?NodeAggregateId $nodeAggregateId = null
     ): Node {
-        $defaultPropertyValues = [];
-        foreach ($nodeType->getDefaultValuesForProperties() as $propertyName => $propertyValue) {
-            $defaultPropertyValues[$propertyName] = new SerializedPropertyValue(
-                $propertyValue,
-                $nodeType->getPropertyType($propertyName)
+        if ($propertyValues instanceof PropertyValuesToWrite) {
+            $propertyValues = $this->propertyConverter->serializePropertyValues(
+                $propertyValues,
+                $nodeType
             );
         }
-        $serializedDefaultPropertyValues = SerializedPropertyValues::fromArray($defaultPropertyValues);
+
+        $serializedDefaultPropertyValues = SerializedPropertyValues::defaultFromNodeType($nodeType);
         return new Node(
             ContentSubgraphIdentity::create(
                 ContentRepositoryId::fromString('default'),
@@ -97,7 +98,7 @@ final class NodeSubjectProvider
                 DimensionSpacePoint::fromArray([]),
                 VisibilityConstraints::withoutRestrictions()
             ),
-            NodeAggregateId::create(),
+            $nodeAggregateId ?? NodeAggregateId::create(),
             OriginDimensionSpacePoint::fromArray([]),
             NodeAggregateClassification::CLASSIFICATION_REGULAR,
             $nodeType->name,
