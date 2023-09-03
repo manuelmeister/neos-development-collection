@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace Neos\ContentRepository\Core\Projection;
 
-use Neos\ContentRepository\Core\CommandHandler\PendingProjections;
 use Neos\ContentRepository\Core\ContentRepository;
 use Neos\ContentRepository\Core\EventStore\EventInterface;
 use Neos\EventStore\CatchUp\CheckpointStorageInterface;
 use Neos\EventStore\Model\EventEnvelope;
-use Neos\EventStore\Model\EventStream\EventStreamInterface;
-use Neos\EventStore\Model\Event\SequenceNumber;
-use Neos\EventStore\Model\Event;
 
 /**
  * Common interface for a Content Repository projection. This API is NOT exposed to the outside world, but is
@@ -29,6 +25,9 @@ interface ProjectionInterface
      * Set up the projection state (create databases, call CheckpointStorage::setup()).
      */
     public function setUp(): void;
+
+    /** @see ProjectionInterface::setUp() */
+    public function isSetUp(): bool;
 
     public function canHandle(EventInterface $event): bool;
 
