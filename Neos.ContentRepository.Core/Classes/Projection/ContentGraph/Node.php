@@ -29,8 +29,10 @@ use Neos\ContentRepository\Core\NodeType\NodeTypeName;
  *
  * The node does not have structure information, i.e. no infos
  * about its children. To f.e. fetch children, you need to fetch
- * the subgraph via $node->subgraphIdentity and then
- * call findChildNodes() on the subgraph.
+ * the subgraph {@see ContentGraphInterface::getSubgraph()} via
+ * $subgraphIdentity {@see Node::$subgraphIdentity}. and then
+ * call findChildNodes() {@see ContentSubgraphInterface::findChildNodes()}
+ * on the subgraph.
  *
  * @api Note: The constructor is not part of the public API
  */
@@ -40,19 +42,19 @@ final class Node
      * @internal
      */
     public function __construct(
+        /**
+         * With this information, you can fetch a Subgraph using {@see ContentGraphInterface::getSubgraph()}.
+         */
         public readonly ContentSubgraphIdentity $subgraphIdentity,
         /**
          * NodeAggregateId (identifier) of this node
-         * This is part of the node's "Read Model" identity, whis is defined by:
-         * - {@see getSubgraphIdentitity}
-         * - {@see getNodeAggregateId} (this method)
-         *
-         * With the above information, you can fetch a Subgraph using {@see ContentGraphInterface::getSubgraph()}.
-         * or {@see \Neos\ContentRepositoryRegistry\ContentRepositoryRegistry::subgraphForNode()}
+         * This is part of the node's "Read Model" identity, which is defined by:
+         * - {@see $subgraphIdentity}
+         * - {@see $nodeAggregateId} (this property)
          */
         public readonly NodeAggregateId $nodeAggregateId,
         /**
-         * returns the DimensionSpacePoint the node is at home in. Usually needed to address a Node in a NodeAggregate
+         * The DimensionSpacePoint the node is at home in. Usually needed to address a Node in a NodeAggregate
          * in order to update it.
          */
         public readonly OriginDimensionSpacePoint $originDimensionSpacePoint,
@@ -60,12 +62,12 @@ final class Node
         public readonly NodeTypeName $nodeTypeName,
         public readonly NodeType $nodeType,
         /**
-         * Returns all properties of this node. References are NOT part of this API;
-         * there you need to check getReference() and getReferences().
+         * All property values of this node indexed by name.
          *
-         * To read the serialized properties, call properties->serialized().
+         * References are NOT part of this API, but can be read through
+         * the subgraph {@see ContentSubgraphInterface::findReferences()}.
          *
-         * @var PropertyCollectionInterface Property values, indexed by their name
+         * You can also read the serialized properties {@see PropertyCollectionInterface::serialized()}.
          */
         public readonly PropertyCollectionInterface $properties,
         public readonly ?NodeName $nodeName,
