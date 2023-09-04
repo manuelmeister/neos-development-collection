@@ -55,16 +55,16 @@ final class PropertyCollection implements \IteratorAggregate, \Countable
 
     public function get(string $propertyName): mixed
     {
-        if (!isset($this->deserializedPropertyValuesRuntimeCache[$propertyName])) {
-            $serializedProperty = $this->serializedPropertyValues->getProperty($propertyName);
-            if ($serializedProperty === null) {
-                return null;
-            }
-            $this->deserializedPropertyValuesRuntimeCache[$propertyName] =
-                $this->propertyConverter->deserializePropertyValue($serializedProperty);
+        if (array_key_exists($propertyName, $this->deserializedPropertyValuesRuntimeCache)) {
+            return $this->deserializedPropertyValuesRuntimeCache[$propertyName];
         }
 
-        return $this->deserializedPropertyValuesRuntimeCache[$propertyName];
+        $serializedProperty = $this->serializedPropertyValues->getProperty($propertyName);
+        if ($serializedProperty === null) {
+            return null;
+        }
+        return $this->deserializedPropertyValuesRuntimeCache[$propertyName] =
+            $this->propertyConverter->deserializePropertyValue($serializedProperty);
     }
 
     /**
