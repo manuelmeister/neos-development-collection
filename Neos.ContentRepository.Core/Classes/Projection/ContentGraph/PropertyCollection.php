@@ -23,7 +23,7 @@ use Neos\ContentRepository\Core\Infrastructure\Property\PropertyConverter;
  * @implements \IteratorAggregate<string,mixed>
  * @api
  */
-final class PropertyCollection implements \IteratorAggregate
+final class PropertyCollection implements \IteratorAggregate, \Countable
 {
     /**
      * Properties from Nodes
@@ -80,5 +80,10 @@ final class PropertyCollection implements \IteratorAggregate
     public function serialized(): SerializedPropertyValues
     {
         return $this->serializedPropertyValues;
+    }
+
+    public function count(): int
+    {
+        return count($this->serializedPropertyValues);
     }
 }
