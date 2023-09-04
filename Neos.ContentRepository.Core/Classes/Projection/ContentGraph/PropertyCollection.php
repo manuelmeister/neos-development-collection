@@ -20,7 +20,7 @@ use Neos\ContentRepository\Core\Infrastructure\Property\PropertyConverter;
 /**
  * The property collection implementation
  *
- * @extends \IteratorAggregate<string,mixed>
+ * @implements \IteratorAggregate<string,mixed>
  * @api
  */
 final class PropertyCollection implements \IteratorAggregate

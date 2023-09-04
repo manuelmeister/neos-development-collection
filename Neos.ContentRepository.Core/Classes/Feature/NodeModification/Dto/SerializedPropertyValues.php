@@ -44,7 +44,7 @@ final class SerializedPropertyValues implements \IteratorAggregate, \Countable, 
     }
 
     /**
-     * @param array<string,array{type:string,value:mixed}|SerializedPropertyValue> $propertyValues
+     * @param array<string,array{type:string,value:mixed}|SerializedPropertyValue|null> $propertyValues
      */
     public static function fromArray(array $propertyValues): self
     {
