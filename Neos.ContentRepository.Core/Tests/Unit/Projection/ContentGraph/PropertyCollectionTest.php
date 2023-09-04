@@ -43,31 +43,31 @@ class PropertyCollectionTest extends TestCase
     /**
      * @test
      */
-    public function offsetGetReturnsNullIfPropertyDoesNotExist(): void
+    public function getPropertyReturnsNullIfPropertyDoesNotExist(): void
     {
         $this->mockSerializer->expects($this->never())->method($this->anything());
         $collection = new PropertyCollection(SerializedPropertyValues::fromArray(['someProperty' => ['value' => 'some string', 'type' => 'string']]), $this->mockPropertyConverter);
-        self::assertNull($collection['non-existing']);
+        self::assertNull($collection->get('non-existing'));
     }
 
     /**
      * @test
      */
-    public function offsetGetReturnsNullIfSerializedPropertyValueIsNull(): void
+    public function getPropertyReturnsNullIfSerializedPropertyValueIsNull(): void
     {
         $this->mockSerializer->expects($this->never())->method($this->anything());
         $collection = new PropertyCollection(SerializedPropertyValues::fromArray(['someProperty' => ['value' => null, 'type' => 'string']]), $this->mockPropertyConverter);
-        self::assertNull($collection['someProperty']);
+        self::assertNull($collection->get('someProperty'));
     }
 
     /**
      * @test
      */
-    public function offsetGetReturnsDeserializedValue(): void
+    public function getPropertyReturnsDeserializedValue(): void
     {
         $this->mockSerializer->expects($this->once())->method('denormalize')->with('some string', 'string', null, [])->willReturn('some deserialized value');
         $collection = new PropertyCollection(SerializedPropertyValues::fromArray(['someProperty' => ['value' => 'some string', 'type' => 'string']]), $this->mockPropertyConverter);
-        self::assertSame('some deserialized value', $collection['someProperty']);
+        self::assertSame('some deserialized value', $collection->get('someProperty'));
     }
 
     /**
