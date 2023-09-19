@@ -76,7 +76,7 @@ final class Node
         public readonly Timestamps $timestamps,
     ) {
         if ($this->classification->isTethered() && $this->nodeName === null) {
-            throw new \InvalidArgumentException('The NodeName must be set if the Node is tethered.', 1695118377232);
+            throw new \InvalidArgumentException('The NodeName must be set if the Node is tethered.', 1695118377);
         }
     }
 
