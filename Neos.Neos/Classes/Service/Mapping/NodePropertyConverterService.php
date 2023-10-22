@@ -164,6 +164,10 @@ class NodePropertyConverterService
      */
     protected function convertValue($propertyValue, $dataType)
     {
+        if ($propertyValue instanceof \JsonSerializable) {
+            return $propertyValue->jsonSerialize();
+        }
+
         $parsedType = TypeHandling::parseType($dataType);
 
         // This hardcoded handling is to circumvent rewriting PropertyMappers that convert objects. Usually they expect the source to be an object already and break if not.
